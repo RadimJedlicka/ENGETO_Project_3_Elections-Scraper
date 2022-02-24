@@ -239,6 +239,7 @@ def main():
 	zapis_csv_souboru(kody_nazvy_odkazy)
 
 
+
 if __name__ == '__main__':
 	try:
 		main()
