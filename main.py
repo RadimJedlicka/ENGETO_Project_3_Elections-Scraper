@@ -227,6 +227,9 @@ def kolecko(counter: int) -> None:
 	print(f'{znaky[counter]:4} ZPRACOVAVAM DATA')
 
 
+
+
+
 def main():
 	"""
 	HLAVNI FUNKCE
