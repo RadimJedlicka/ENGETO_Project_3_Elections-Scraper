@@ -1,150 +1,246 @@
-import os
 from pprint import pprint
+import os
 import csv
+import sys
 
-import bs4.element
+import bs4
 import requests
 from bs4 import BeautifulSoup
 
-
-def main(url):
-    # zpracuj odpoved serveru
-    url = url
-    response = requests.get(url)
-    # print(response.text)
-
-    parsed_soup = BeautifulSoup(response.text, 'html.parser')
-
-    # najdi prvni tabulku
-    table_tag_top = parsed_soup.find('table', {'class': 'table'})
-    print(table_tag_top.prettify())
-    print(type(table_tag_top))
-    pprint(dir(table_tag_top))
-
-    # selekce elementu tr, cili radku
-    vsechny_tr = table_tag_top.find_all('tr')
-    print(dir(vsechny_tr))
-    print(vsechny_tr[2])
-    print(type(vsechny_tr))
-    print(type(vsechny_tr[1]))
-
-    # selekce jednotlivych bunek td od indexu 2, to je prvni nazev obce
-    vysledky = []
-    for tr in vsechny_tr[2:]:
-        td_na_radku = tr.find_all('td')
-        data_obce = vyber_atributy_z_radku(td_na_radku)
-        vysledky.append(data_obce)
-        # ten samy zapis, ale na jednom radku
-        # vysledky.append(vyber_atributy_z_radku(tr.find_all('td')))
-    # stejny zapis pomoci komprehence
-    # vysledky = [vyber_atributy_z_radku(tr.find_all('td'))
-    #             for tr in vsechny_tr[2:]]
-
-    pprint(vysledky)
-
-    zapis_data(vysledky, 'prvni_tabulka.csv')
+global url
 
 
-def vyber_atributy_z_radku(tr_tag: bs4.element.ResultSet):
-    """
-    Z kazdeho radku (tr) vyber urcite bunky (td)[index]
-    a zabal je do slovniku
-    :param tr_tag: vsechny_tr
-    :return: dict
-    """
-    return {
-        'Kod obce': tr_tag[0].get_text(),
-        'Nazev obce': tr_tag[1].get_text()
-    }
+def polivka(odkaz):
+	"""
+	Funkce posila dotaz na server pomoci odkazu zadaneho v prvnim parametru fce main().
+	Funkce vraci objekt BeautifulSoup.
+	"""
+	response = requests.get(odkaz)
+	return BeautifulSoup(response.text, 'html.parser')
 
 
-def zapis_data(data: list, jmeno_souboru: str) -> str:
-    with open(jmeno_souboru, mode='w', encoding='UTF-8', newline='') as csv_output:
-        sloupce = data[0].keys()
-        writer = csv.DictWriter(csv_output, fieldnames=sloupce)
-        writer.writeheader()
-        writer.writerows(data)
-        print("File written")
+def seznam_vsech_obci() -> list:
+	"""
+	Fuknce vyuziva nekolika funkci:
+	pomoci polivka() skrapuje stranku, jejiz odkaz byl zadan v prvnim argumentu fce main();
+	extrahuj_kody_obci() vytvorri seznam kodu vsech obci;
+	extrahuj_nazvy_obci() vytvori seznam nazvu vsech obci;
+	extrahuj_odkazy_obci() vytvori seznam odkazu, ktere se budou pouzivat dal.
+	Nakonec se vse zazipuje do jednoho seznamu.
+	"""
+	global url
+	url = sys.argv[1]  # 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=12&xnumnuts=7103'
+	parsed_soup = polivka(url)
+
+	kod_obce = extrahuj_kody_obci(parsed_soup)
+	# pprint(kod_obce)
+	nazev_obce = extrahuj_nazvy_obci(parsed_soup)
+	# pprint(nazev_obce)
+	odkazy_na_obce = extrahuj_odkazy_obci(parsed_soup)
+	# pprint(odkazy_na_obce)
+	return list(zip(kod_obce, nazev_obce, odkazy_na_obce))
 
 
-
-    # kod_obce = [x.get_text() for x in parsed_soup.find_all('td', {'class': 'cislo'})]
-    # nazev_obce = [x.get_text() for x in parsed_soup.find_all('td', {'class': 'overflow_name'})]
-    # # pprint(parsed_soup.find_all('td', {'class': 'cislo'}))
-    # # pprint(parsed_soup.find_all('td', {'class': 'overflow_name'}))
-    # print(kod_obce)
-    # print(nazev_obce)
-
-#     filtruj_kod_z_radku(kod_obce)
-#
-#
-# def filtruj_kod_z_radku(a_tag):
-#     radky = a_tag.get_text().splitlines()
-#     print(radky)
-
-    # data = dict(zip(kod_obce, nazev_obce))
-    # print(data)
-    #
-    #
-    #
-    #
-    # for kod in kod_obce:
-    #     print(kod)
-    # #
-    # # for nazev in nazev_obce:
-    # #     print(nazev.text)
-    # #
-    # #
-    # with open('soubor1.csv', mode='w', encoding='UTF=8', newline='') as output:
-    #     header = ['Kod obce', 'Nazev obce']
-    #     writer = csv.writer(output)
-    #     writer.writerow(header)
-    #     writer.writerows(data)
-    #
-    #     print('File written')
-
-    # sloupce = data[0].keys()
-    # zapis = csv.DictWriter(csv_output, fieldnames=sloupce)
-    # zapis.writeheader()
-    # zapis.writerows(data)
+def vsechny_td_tagy(soup: bs4.BeautifulSoup, *args) -> list:
+	"""
+	Vstup je parsed_soup a stringy, ktere charakteriyuji hodnoty atributu headers pro tabulky, napr:
+	tabulka 1 => 't1sa1 t1sb1',
+	tabulka 2 => 't2sa1 t2sb1',
+	tabulka 3 -> 't3sa1 t3sb1'  a tak dal...
+	https://www.w3schools.com/cssref/css_selectors.asp
+	Vraci list vsech td radku.
+	"""
+	radky = []
+	for arg in args:
+		radky += soup.select(f'td[headers="{arg}"]')
+	return radky
 
 
+def extrahuj_kody_obci(soup: bs4.BeautifulSoup) -> list:
+	"""
+	Vstup fce na parsed_soup
+	Pomoci fce vsechny_td_tagy projdeme vsechny radky a ty, ktere maji a_tag, ulozime do listu.
+	Pouze jejich popis pomoci .text
+	Expects soup objects.
+	Vraci list kodu vsech obci.
+	"""
+	radky = vsechny_td_tagy(soup, 't1sa1 t1sb1', 't2sa1 t2sb1', 't3sa1 t3sb1')
+	# kody_obci = []
+	# for td in radky:
+	# 	if td.find('a'):
+	# 		kody_obci.append(td.find('a').text)
+	# return kody_obci
+	# list comprehension
+	return [td.find('a').text for td in radky if td.find('a')]
 
-#
-#     table_tag_obec = soup.find('table', {'class': 'table'})
-#     # print(table_tag_obec)
-#
-#     tr_tags = table_tag_obec.find_all('tr')
-#     print(tr_tags[2:])
-#     #
-#     print(vyber_atributy_z_radku(tr_tags))
-#
-# def vyber_atributy_z_radku(tr_tag: 'import bs4.element'):
-#     """
-#     z kazdeho radku (tr) vyber urcite bunky (td)[index]
-#     a zabal je do slovniku
-#     """
-#     return {
-#         'Cislo': tr_tag[0].get_text(),
-#         'Jmeno obce': tr_tag[1].get_text()
 
-    # }
-    #
-    # vysledky = []
-    #
-    # for tr in tr_tags[1:]:
-    #     vysledky.append(vyber_atributy_z_radku(tr.find_all('td')))
-    #
-    # pprint(vysledky)
-    #
-    #
-    # data_o_stranach = [
-    #     vyber_atributy_z_radku(tr.find_all('th'))
-    #     for tr in vsechny_tr[1:]
-    # ]
-    #
-    # pprint(data_o_stranach)
+def extrahuj_nazvy_obci(soup: bs4.BeautifulSoup) -> list:
+	"""
+	Vstup fce na parsed_soup
+	Pomoci fce vsechny_td_tagy projdeme vsechny radky a vypiseme jejich jmena.
+	Pouze jejich popis pomoci .text
+	Expects soup objects.
+	Vraci list nazvu vsech obci.
+	"""
+	radky = vsechny_td_tagy(soup, 't1sa1 t1sb2', 't2sa1 t2sb2', 't3sa1 t3sb2')
+	# nazvy = []
+	# for td in radky:
+	# 	nazvy.append(td.text)
+	# return nazvy
+	# list comprehension
+	return [td.text for td in radky]
+
+
+def extrahuj_odkazy_obci(soup: bs4.BeautifulSoup) -> list:
+	"""
+	Vstup fce na parsed_soup
+	Pomoci fce vsechny_td_tagy projdeme vsechny radky a ty, ktere maji a_tag, ulozime do listu..
+	Chceme ale jejich hodnotu atributu href.
+	Vraci list odkazu na vsechny obce.
+	"""
+	radky = vsechny_td_tagy(soup, 't1sa1 t1sb1', 't2sa1 t2sb1', 't3sa1 t3sb1')
+	# odkazy = []
+	# for td in radky:
+	# 	if td.find('a')
+	# 		odkazy.append(td.find('a').get('href'))
+	# return odkazy
+	# list comprehension
+	return [td.find('a').get('href') for td in radky if td.find('a')]
+
+
+def volici_obalky_hlasy(soup) -> list:
+	"""
+	Vstup fce na parsed_soup
+	Podle hlavicek najde hodnoty pro Volice, Obalky a Hlasy.
+	Vraci list s hodnotami pro Volice, Obalky a Hlasy.
+	"""
+	headers = ['sa2', 'sa3', 'sa6']
+	v_o_h = []
+	for header in headers:
+		hodnota = soup.find('td', {'headers': f'{header}'})
+		#  POZOR na ValueError: invalid literal for int() with base 10: '1\xa0224'
+		hodnota = hodnota.text.replace('\xa0', '')  # nahrazuje mezeru za tisicovkou
+		v_o_h.append(int(hodnota))
+	return v_o_h
+
+
+def hlasy_pro_stranu(soup) -> list:
+	"""
+	Vstupem fce je parsed_soup.
+	Pomoci fce vsechny_td_tagy projdeme radky a vybereme hodnoty podle hlavicek.
+	Vraci list s pocty platnych hlasu.
+	"""
+	radky = vsechny_td_tagy(soup, 't1sa2 t1sb3', 't2sa2 t2sb3')
+	# pocty_hlasu = []
+	# for td in radky:
+	# 	if td.text != '-':
+	# 		element = element.text.replace('\xa0', '')
+	# 		pocty_hlasu.append(int(td.text))
+	# return pocty_hlasu
+	# list comprehension
+	return [(int(td.text.replace('\xa0', ''))) for td in radky if td.text != '-']
+
+
+def spoj_vysledky(soup) -> list:
+	"""
+	Vstupem fce je parsed_soup.
+	Spoji listy s vysledky pro Volice, Obalky, Hlasy a Hlasy pro strany.
+	Vraci list.
+	"""
+	return volici_obalky_hlasy(soup) + hlasy_pro_stranu(soup)
+
+
+def extrahuj_jmena_stran(soup) -> list:
+	"""
+	Vstupem fce je parsed_soup.
+	Pomoci fce vsechny_td_tagy projdeme radky a vybereme hodnoty podle hlavicek.
+	Hledame jmena polit. stran. Metodou .text ziskame nazvy.
+	Vraci list se jmen polit. stran.
+	"""
+	radky = vsechny_td_tagy(soup, 't1sa1 t1sb2', 't2sa1 t2sb2')
+	# list comprehension
+	return [td.text for td in radky if td.text != '-']
+
+
+def hlavicka(soup) -> list:
+	"""
+	Vstupem fce je parsed_soup.
+	Spoji listy hlavicka1 a hlavicka2.
+	Vraci list.
+	"""
+	hlavicka1 = ['Kód obce', 'Název obce', 'Voliči v seznamu', 'Vydané obálky', 'Platné hlasy']
+	hlavicka2 = extrahuj_jmena_stran(soup)
+	return hlavicka1 + hlavicka2
+
+
+def zapis_csv_souboru(kody_nazvy_odkazy) -> csv:
+	"""
+	Vstupem fce je list kodu, nazvu a odkazu obci.
+	Funkce zapisuje do csv souboru data vyskrapovana ze zadane adresy v 1 argumentu fce main()
+	a naslednych odkazech na obce.
+	Vraci csv soubor pojmenovany podle druheho argumentu fce main().
+	"""
+	jmeno_souboru = sys.argv[2]
+	url_odkaz = 'https://www.volby.cz/pls/ps2017nss/' + kody_nazvy_odkazy[0][2]
+	odkaz_soup = polivka(url_odkaz)
+	csv_hlavicka = hlavicka(odkaz_soup)
+
+	# kontrolni printy, jestli funkce vraci pozadovane vystupy.
+	# print(volici_obalky_hlasy(odkaz_soup))
+	# print(hlasy_pro_stranu(odkaz_soup))
+	# print(spoj_vysledky(odkaz_soup))
+	# print(extrahuj_jmena_stran(odkaz_soup))
+
+	with open(f'{jmeno_souboru}.csv', mode='w', encoding="UTF-8", newline='') as soubor:
+		writer = csv.writer(soubor)
+		writer.writerow(csv_hlavicka)
+		counter = 0
+		soucet_obci = len(kody_nazvy_odkazy)
+		for location in kody_nazvy_odkazy:
+			kolecko(counter)
+			print(f'{(counter/soucet_obci*100):.0f} % VYSLEDKU ULOZENO')
+			link2 = 'https://www.volby.cz/pls/ps2017nss/' + location[2]
+			soup = polivka(link2)
+			results = spoj_vysledky(soup)
+			writer.writerow([location[0], location[1]] + results)
+			counter += 1
+			os.system('cls')
+		finalni_zprava(counter, soucet_obci, jmeno_souboru)
+		exit()
+
+
+def finalni_zprava(counter, soucet_obci, jmeno_souboru):
+	print(f'ULOZENO {(counter / soucet_obci * 100):.0f} % VYSLEDKU')
+	print(f'Vsechny vysledky z adresy: \n{url}')
+	print(f'Byly zapsany do souboru {jmeno_souboru}.csv')
+
+
+def kolecko(counter: int) -> None:
+	"""
+	Jenom legracni fce na zobrazeni otacejiciho se "kolecka"
+	pri zpracovavani dat :-D
+	"""
+	cisla = [cislo for cislo in range(0, 101)]
+	bal = ['|', '/', '--', '\\']
+	znacky = bal * 25
+	znaky = dict(zip(cisla, znacky))
+	print(f'{znaky[counter]:4} ZPRACOVAVAM DATA')
+
+
+def main():
+	"""
+	HLAVNI FUNKCE
+	Pri spusteni v terminalu vyzaduje dva argumenty:
+	1. url stranky okresu, ktery chceme skrapovat
+	2. jmeno souboru, ktery bude zapsan (bez koncovky).
+	"""
+	kody_nazvy_odkazy = seznam_vsech_obci()
+	# pprint(kody_nazvy_odkazy)
+	zapis_csv_souboru(kody_nazvy_odkazy)
 
 
 if __name__ == '__main__':
-    main('https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=12&xnumnuts=7103')
+	try:
+		main()
+	except Exception as exception:
+		print(f'Vyskytl se problem typu {exception}, ukoncuji program...')
