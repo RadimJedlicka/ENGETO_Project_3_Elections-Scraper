@@ -211,7 +211,7 @@ def zapis_csv_souboru(kody_nazvy_odkazy) -> csv:
 
 def finalni_zprava(counter, soucet_obci, jmeno_souboru):
 	pprint(f'ULOZENO {(counter / soucet_obci * 100):.0f} % VYSLEDKU')
-	print(f'Vsechny vysledky z adresy {url}')
+	print(f'Vsechny vysledky z adresy \n {url}')
 	print(f'Byly zapsany do souboru {jmeno_souboru}.csv')
 
 
