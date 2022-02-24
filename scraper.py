@@ -87,6 +87,7 @@ def extrahuj_nazvy_obci(soup: bs4.BeautifulSoup) -> list:
 	# for td in radky:
 	# 	nazvy.append(td.text)
 	# return nazvy
+	# list comprehension
 	return [td.text for td in radky]
 
 
@@ -103,6 +104,7 @@ def extrahuj_odkazy_obci(soup: bs4.BeautifulSoup) -> list:
 	# 	if td.find('a')
 	# 		odkazy.append(td.find('a').get('href'))
 	# return odkazy
+	# list comprehension
 	return [td.find('a').get('href') for td in radky if td.find('a')]
 
 
@@ -135,6 +137,7 @@ def hlasy_pro_stranu(soup) -> list:
 	# 		element = element.text.replace('\xa0', '')
 	# 		pocty_hlasu.append(int(td.text))
 	# return pocty_hlasu
+	# list comprehension
 	return [(int(td.text.replace('\xa0', ''))) for td in radky if td.text != '-']
 
 
@@ -155,6 +158,7 @@ def extrahuj_jmena_stran(soup) -> list:
 	Vraci list se jmen polit. stran.
 	"""
 	radky = vsechny_td_tagy(soup, 't1sa1 t1sb2', 't2sa1 t2sb2')
+	# list comprehension
 	return [td.text for td in radky if td.text != '-']
 
 
