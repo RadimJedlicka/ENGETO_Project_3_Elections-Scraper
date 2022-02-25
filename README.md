@@ -2,12 +2,7 @@
 
 ---
 Tento program stahuje výsledky voleb pro vybrané území (okres) a ukládá je do csv souboru.
-
-###-------------------------- jak pracovat s programem -------------------------------
-
 <br>
-
-
 
 ## 1. *Instalace requirements*
 - v preferovaném IDE nainstalujte potřebné knihovny ze souboru requirements.txt 
