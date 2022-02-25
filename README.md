@@ -15,7 +15,7 @@ Tento program stahuje výsledky voleb pro vybrané území (okres) a ukládá je
 - pokud to v příkazovém řádku nefunguje, zkuste zapsat v altermativním tvaru:
   - `pip3 install beautifulsoup4`
   - `python -m pip install beautifulsoup4`
-  - `python -m pip3 install beautifulsoup4`
+  - `python3 -m pip3 install beautifulsoup4`
 
 ## 2. *Spuštění programu*
 Program se spouští pomocí souboru main.py. Pro bezproblémové spuštění a vygenerování csv souboru 
