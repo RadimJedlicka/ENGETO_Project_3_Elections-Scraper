@@ -30,7 +30,9 @@ V souboru (zadané_jméno).csv naleznete uložená data.
 
 ## *Ukázka spuštění programu*
 Do příkazového řádku napište:<br>
-python main.py 'https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=12&xobec=506761&xvyber=7103' 'Prostejov'
+python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=12&xnumnuts=7103' 'Prostejov'<br>
+python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=1&xnumnuts=1100' 'Praha'<br>
+python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=4&xnumnuts=3202' 'Klatovy'
 
 
 

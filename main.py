@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 global url
 
 
-def polivka(odkaz):
+def polivka(odkaz: str) -> BeautifulSoup:
 	"""
 	Funkce posila dotaz na server pomoci odkazu zadaneho v prvnim parametru fce main().
 	Funkce vraci objekt BeautifulSoup.
@@ -23,7 +23,7 @@ def seznam_vsech_obci() -> list:
 	"""
 	Fuknce vyuziva nekolika funkci:
 	pomoci polivka() skrapuje stranku, jejiz odkaz byl zadan v prvnim argumentu fce main();
-	extrahuj_kody_obci() vytvorri seznam kodu vsech obci;
+	extrahuj_kody_obci() vytvori seznam kodu vsech obci;
 	extrahuj_nazvy_obci() vytvori seznam nazvu vsech obci;
 	extrahuj_odkazy_obci() vytvori seznam odkazu, ktere se budou pouzivat dal.
 	Nakonec se vse zazipuje do jednoho seznamu.
@@ -43,10 +43,10 @@ def seznam_vsech_obci() -> list:
 
 def vsechny_td_tagy(soup: bs4.BeautifulSoup, *args) -> list:
 	"""
-	Vstup je parsed_soup a stringy, ktere charakteriyuji hodnoty atributu headers pro tabulky, napr:
+	Vstup je parsed_soup a stringy, ktere charakterizuji hodnoty atributu headers pro tabulky, napr:
 	tabulka 1 => 't1sa1 t1sb1',
 	tabulka 2 => 't2sa1 t2sb1',
-	tabulka 3 -> 't3sa1 t3sb1'  a tak dal...
+	tabulka 3 => 't3sa1 t3sb1'  a tak dal...
 	https://www.w3schools.com/cssref/css_selectors.asp
 	Vraci list vsech td radku.
 	"""
@@ -58,10 +58,9 @@ def vsechny_td_tagy(soup: bs4.BeautifulSoup, *args) -> list:
 
 def extrahuj_kody_obci(soup: bs4.BeautifulSoup) -> list:
 	"""
-	Vstup fce na parsed_soup
+	Vstup fce je parsed_soup.
 	Pomoci fce vsechny_td_tagy projdeme vsechny radky a ty, ktere maji a_tag, ulozime do listu.
-	Pouze jejich popis pomoci .text
-	Expects soup objects.
+	Vytahneme pouze jejich popis pomoci .text
 	Vraci list kodu vsech obci.
 	"""
 	radky = vsechny_td_tagy(soup, 't1sa1 t1sb1', 't2sa1 t2sb1', 't3sa1 t3sb1')
@@ -76,10 +75,9 @@ def extrahuj_kody_obci(soup: bs4.BeautifulSoup) -> list:
 
 def extrahuj_nazvy_obci(soup: bs4.BeautifulSoup) -> list:
 	"""
-	Vstup fce na parsed_soup
+	Vstup fce je parsed_soup
 	Pomoci fce vsechny_td_tagy projdeme vsechny radky a vypiseme jejich jmena.
-	Pouze jejich popis pomoci .text
-	Expects soup objects.
+	Vytahneme pouze jejich popis pomoci .text
 	Vraci list nazvu vsech obci.
 	"""
 	radky = vsechny_td_tagy(soup, 't1sa1 t1sb2', 't2sa1 t2sb2', 't3sa1 t3sb2')
@@ -93,8 +91,8 @@ def extrahuj_nazvy_obci(soup: bs4.BeautifulSoup) -> list:
 
 def extrahuj_odkazy_obci(soup: bs4.BeautifulSoup) -> list:
 	"""
-	Vstup fce na parsed_soup
-	Pomoci fce vsechny_td_tagy projdeme vsechny radky a ty, ktere maji a_tag, ulozime do listu..
+	Vstup fce je parsed_soup
+	Pomoci fce vsechny_td_tagy projdeme vsechny radky a ty, ktere maji a_tag, ulozime do listu.
 	Chceme ale jejich hodnotu atributu href.
 	Vraci list odkazu na vsechny obce.
 	"""
@@ -110,7 +108,7 @@ def extrahuj_odkazy_obci(soup: bs4.BeautifulSoup) -> list:
 
 def volici_obalky_hlasy(soup) -> list:
 	"""
-	Vstup fce na parsed_soup
+	Vstup fce je parsed_soup
 	Podle hlavicek najde hodnoty pro Volice, Obalky a Hlasy.
 	Vraci list s hodnotami pro Volice, Obalky a Hlasy.
 	"""
@@ -126,7 +124,7 @@ def volici_obalky_hlasy(soup) -> list:
 
 def hlasy_pro_stranu(soup) -> list:
 	"""
-	Vstupem fce je parsed_soup.
+	Vstupem fce je soup.
 	Pomoci fce vsechny_td_tagy projdeme radky a vybereme hodnoty podle hlavicek.
 	Vraci list s pocty platnych hlasu.
 	"""
@@ -134,7 +132,7 @@ def hlasy_pro_stranu(soup) -> list:
 	# pocty_hlasu = []
 	# for td in radky:
 	# 	if td.text != '-':
-	# 		element = element.text.replace('\xa0', '')
+	# 		td = td.text.replace('\xa0', '')
 	# 		pocty_hlasu.append(int(td.text))
 	# return pocty_hlasu
 	# list comprehension
@@ -143,7 +141,7 @@ def hlasy_pro_stranu(soup) -> list:
 
 def spoj_vysledky(soup) -> list:
 	"""
-	Vstupem fce je parsed_soup.
+	Vstupem fce je soup.
 	Spoji listy s vysledky pro Volice, Obalky, Hlasy a Hlasy pro strany.
 	Vraci list.
 	"""
@@ -152,7 +150,7 @@ def spoj_vysledky(soup) -> list:
 
 def extrahuj_jmena_stran(soup) -> list:
 	"""
-	Vstupem fce je parsed_soup.
+	Vstupem fce je soup.
 	Pomoci fce vsechny_td_tagy projdeme radky a vybereme hodnoty podle hlavicek.
 	Hledame jmena polit. stran. Metodou .text ziskame nazvy.
 	Vraci list se jmen polit. stran.
@@ -164,7 +162,7 @@ def extrahuj_jmena_stran(soup) -> list:
 
 def hlavicka(soup) -> list:
 	"""
-	Vstupem fce je parsed_soup.
+	Vstupem fce je soup.
 	Spoji listy hlavicka1 a hlavicka2.
 	Vraci list.
 	"""
@@ -176,7 +174,7 @@ def hlavicka(soup) -> list:
 def zapis_csv_souboru(kody_nazvy_odkazy) -> csv:
 	"""
 	Vstupem fce je list kodu, nazvu a odkazu obci.
-	Funkce zapisuje do csv souboru data vyskrapovana ze zadane adresy v 1 argumentu fce main()
+	Funkce zapisuje do csv souboru data vyskrapovana ze zadane adresy v 1. argumentu fce main()
 	a naslednych odkazech na obce.
 	Vraci csv soubor pojmenovany podle druheho argumentu fce main().
 	"""
@@ -196,13 +194,13 @@ def zapis_csv_souboru(kody_nazvy_odkazy) -> csv:
 		writer.writerow(csv_hlavicka)
 		counter = 0
 		soucet_obci = len(kody_nazvy_odkazy)
-		for location in kody_nazvy_odkazy:
+		for polozka_v_seznamu in kody_nazvy_odkazy:
 			kolecko(counter)
 			print(f'{(counter/soucet_obci*100):.0f} % VYSLEDKU ULOZENO')
-			link2 = 'https://www.volby.cz/pls/ps2017nss/' + location[2]
-			soup = polivka(link2)
+			url2 = 'https://www.volby.cz/pls/ps2017nss/' + polozka_v_seznamu[2]
+			soup = polivka(url2)
 			results = spoj_vysledky(soup)
-			writer.writerow([location[0], location[1]] + results)
+			writer.writerow([polozka_v_seznamu[0], polozka_v_seznamu[1]] + results)
 			counter += 1
 			os.system('cls')
 		finalni_zprava(counter, soucet_obci, jmeno_souboru)
@@ -213,6 +211,8 @@ def finalni_zprava(counter, soucet_obci, jmeno_souboru):
 	print(f'ULOZENO {(counter / soucet_obci * 100):.0f} % VYSLEDKU')
 	print(f'Vsechny vysledky z adresy: \n{url}')
 	print(f'Byly zapsany do souboru {jmeno_souboru}.csv')
+	print()
+	print('Ukoncuji program...')
 
 
 def kolecko(counter: int) -> None:
@@ -221,8 +221,8 @@ def kolecko(counter: int) -> None:
 	pri zpracovavani dat :-D
 	"""
 	cisla = [cislo for cislo in range(0, 101)]
-	bal = ['|', '/', '--', '\\']
-	znacky = bal * 25
+	znacky = ['|', '/', '--', '\\']
+	znacky = znacky * 25
 	znaky = dict(zip(cisla, znacky))
 	print(f'{znaky[counter]:4} ZPRACOVAVAM DATA')
 
