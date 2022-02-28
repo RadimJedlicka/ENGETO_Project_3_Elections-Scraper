@@ -20,16 +20,22 @@ jsou na vstupu vyžadovány dva argumenty.
 
 Oba argumenty musí být zapsány ve formě stringu.
 
+*POZN.: pokud spouštíme program v příkazovém řádku, je třeba použít dvojité uvozovky namísto jednoduchých.*
+
 ## 3. *Výstup*
 V souboru (zadané_jméno).csv naleznete uložená data.
 
 ## *Ukázka spuštění programu*
-Do příkazového řádku napište:<br>
+Do terminálu napište:<br>
 python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=12&xnumnuts=7103' 'Prostejov'
 <br>
 python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=1&xnumnuts=1100' 'Praha'
 <br>
 python main.py 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=4&xnumnuts=3202' 'Klatovy'
 
-
-
+Do příkazového řádku (cmd) napište:<br>
+python main.py "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=12&xnumnuts=7103" "Prostejov"
+<br>
+python main.py "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=1&xnumnuts=1100" "Praha"
+<br>
+python main.py "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=4&xnumnuts=3202" "Klatovy"
